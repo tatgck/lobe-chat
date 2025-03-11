@@ -221,6 +221,7 @@ const withPWA = isProd
       register: false,
       swDest: 'public/sw.js',
       swSrc: 'src/app/sw.ts',
+     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024, // 20MB（根据需求调整）
     })
   : noWrapper;
 
