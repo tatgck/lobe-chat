@@ -79,14 +79,47 @@ describe('LobeOpenRouterAI', () => {
 
       // Assert
       expect(instance['client'].chat.completions.create).toHaveBeenCalledWith(
-        {
+        expect.objectContaining({
           max_tokens: 1024,
           messages: [{ content: 'Hello', role: 'user' }],
           stream: true,
           model: 'mistralai/mistral-7b-instruct:free',
           temperature: 0.7,
           top_p: 1,
+        }),
+        { headers: { Accept: '*/*' } },
+      );
+      expect(result).toBeInstanceOf(Response);
+    });
+
+    it('should add reasoning field when thinking is enabled', async () => {
+      // Arrange
+      const mockStream = new ReadableStream();
+      const mockResponse = Promise.resolve(mockStream);
+
+      (instance['client'].chat.completions.create as Mock).mockResolvedValue(mockResponse);
+
+      // Act
+      const result = await instance.chat({
+        messages: [{ content: 'Hello', role: 'user' }],
+        model: 'mistralai/mistral-7b-instruct:free',
+        temperature: 0.7,
+        thinking: {
+          type: 'enabled',
+          budget_tokens: 1500,
         },
+      });
+
+      // Assert
+      expect(instance['client'].chat.completions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messages: [{ content: 'Hello', role: 'user' }],
+          model: 'mistralai/mistral-7b-instruct:free',
+          reasoning: {
+            max_tokens: 1500,
+          },
+          temperature: 0.7,
+        }),
         { headers: { Accept: '*/*' } },
       );
       expect(result).toBeInstanceOf(Response);
